@@ -23,18 +23,17 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-
-[project.urls]
-Homepage = "https://github.com/yourusername/errorblob"
-Repository = "https://github.com/yourusername/errorblob"
-Issues = "https://github.com/yourusername/errorblob/issues"
-
 dependencies = [
     "click>=8.1.0",
     "rich>=13.0.0",
     "pydantic>=2.0.0",
     "turbopuffer>=0.1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/benguz/errorblob"
+Repository = "https://github.com/benguz/errorblob"
+Issues = "https://github.com/benguz/errorblob/issues"
 
 [project.scripts]
 errorblob = "errorblob.cli:cli"
@@ -52,4 +51,3 @@ packages = ["src/errorblob"]
 include = [
     "/src",
 ]
-
