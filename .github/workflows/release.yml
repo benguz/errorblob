@@ -1,0 +1,68 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+            name: macos-arm64
+          - os: macos-13
+            arch: x64
+            name: macos-x64
+          - os: ubuntu-latest
+            arch: x64
+            name: linux-x64
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pyinstaller
+      
+      - name: Build binary
+        run: |
+          pyinstaller --onefile --name errorblob-${{ matrix.name }} --paths src errorblob_entry.py
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: errorblob-${{ matrix.name }}
+          path: dist/errorblob-${{ matrix.name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries
+          merge-multiple: true
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: binaries/*
+          generate_release_notes: true
+

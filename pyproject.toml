@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "errorblob"
+version = "0.1.0"
+description = "Never block on the same bug twice - a lightning-fast error database for fast moving teams"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+keywords = ["error", "debugging", "cli", "team", "knowledge-base"]
+authors = [
+    { name = "Ben Guzovsky", email = "your-email@example.com" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/errorblob"
+Repository = "https://github.com/yourusername/errorblob"
+Issues = "https://github.com/yourusername/errorblob/issues"
+
+dependencies = [
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "turbopuffer>=0.1.0",
+]
+
+[project.scripts]
+errorblob = "errorblob.cli:cli"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/errorblob"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+]
+
