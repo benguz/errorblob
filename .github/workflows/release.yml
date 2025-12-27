@@ -11,13 +11,10 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            arch: arm64
             name: macos-arm64
           - os: macos-13
-            arch: x64
             name: macos-x64
           - os: ubuntu-latest
-            arch: x64
             name: linux-x64
 
     runs-on: ${{ matrix.os }}
@@ -39,6 +36,9 @@ jobs:
         run: |
           pyinstaller --onefile --name errorblob-${{ matrix.name }} --paths src errorblob_entry.py
       
+      - name: Make executable
+        run: chmod +x dist/errorblob-${{ matrix.name }}
+      
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -50,6 +50,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      sha_macos_arm64: ${{ steps.sha.outputs.sha_macos_arm64 }}
+      sha_macos_x64: ${{ steps.sha.outputs.sha_macos_x64 }}
+      sha_linux_x64: ${{ steps.sha.outputs.sha_linux_x64 }}
     
     steps:
       - uses: actions/checkout@v4
@@ -60,9 +64,50 @@ jobs:
           path: binaries
           merge-multiple: true
       
+      - name: List binaries
+        run: ls -la binaries/
+      
+      - name: Calculate SHA256 hashes
+        id: sha
+        run: |
+          echo "sha_macos_arm64=$(sha256sum binaries/errorblob-macos-arm64 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+          echo "sha_macos_x64=$(sha256sum binaries/errorblob-macos-x64 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+          echo "sha_linux_x64=$(sha256sum binaries/errorblob-linux-x64 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+      
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: binaries/*
           generate_release_notes: true
+          body: |
+            ## Installation
+            
+            ```bash
+            brew tap benguz/errorblob
+            brew install errorblob
+            ```
+            
+            Or download the binary for your platform below.
+            
+            ## SHA256 Checksums
+            - `errorblob-macos-arm64`: `${{ steps.sha.outputs.sha_macos_arm64 }}`
+            - `errorblob-macos-x64`: `${{ steps.sha.outputs.sha_macos_x64 }}`
+            - `errorblob-linux-x64`: `${{ steps.sha.outputs.sha_linux_x64 }}`
 
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Homebrew Formula
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          repository: benguz/homebrew-errorblob
+          event-type: update-formula
+          client-payload: |
+            {
+              "version": "${{ github.ref_name }}",
+              "sha_macos_arm64": "${{ needs.release.outputs.sha_macos_arm64 }}",
+              "sha_macos_x64": "${{ needs.release.outputs.sha_macos_x64 }}",
+              "sha_linux_x64": "${{ needs.release.outputs.sha_linux_x64 }}"
+            }

@@ -46,7 +46,7 @@ def get_storage(config: ErrorBlobConfig) -> StorageBackend:
 
 
 @click.group()
-@click.version_option()
+@click.version_option(version="0.1.0", prog_name="errorblob")
 def cli():
     """errorblob - Never block on the same bug twice.
     

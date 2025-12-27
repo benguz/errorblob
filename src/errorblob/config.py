@@ -65,12 +65,15 @@ def load_config() -> ErrorBlobConfig:
 def save_config(config: ErrorBlobConfig) -> None:
     """Save configuration to file."""
     config_path = get_config_path()
-    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     
     with open(config_path, "w") as f:
         # Convert to dict and handle Path serialization
         data = config.model_dump(mode="json")
         json.dump(data, f, indent=2, default=str)
+    
+    # Restrict config file permissions (contains API key)
+    config_path.chmod(0o600)
 
 
 def get_turbopuffer_api_key(config: ErrorBlobConfig) -> Optional[str]:
